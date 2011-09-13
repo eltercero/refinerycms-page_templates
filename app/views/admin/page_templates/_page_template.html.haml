@@ -1,0 +1,34 @@
+%div
+  .header
+    %h2.title
+      = page_template.path
+  .detail
+    %p
+      %strong Nombre:
+      = page_template.name
+    %p
+      %strong Descripción:
+      = page_template.description
+
+    - unless page_template.layout.nil?
+      %p
+        %strong Layout:
+        = page_template.layout
+
+    - unless page_template.page_parts.nil?
+      %p
+        %strong Parts:
+        %dl
+          - page_template.page_parts.each do |part|
+            %dt= part['title']
+            %dd 
+              - part.reject{ |k,v| k == "title" }.each do |k, v|
+                %strong= "#{k}: "
+                = v
+                %br
+    %p
+      %strong Asignada a:
+      - if page_template.pages.empty?
+        Ninguna página
+      - page_template.pages.each do |page|
+        = link_to page.title, edit_admin_page_path(page)

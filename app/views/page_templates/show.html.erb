@@ -1,0 +1,39 @@
+<% content_for :body_content_title do %>
+  <%= @page_template.name %>
+<% end %>
+
+<% content_for :body_content_left do %>
+  <section>
+    <h1>Name</h1>
+    <p>
+      <%=raw @page_template.name %>
+    </p>
+  </section>
+  <section>
+    <h1>Description</h1>
+    <p>
+      <%=raw @page_template.description %>
+    </p>
+  </section>
+  <section>
+    <h1>Path</h1>
+    <p>
+      <%=raw @page_template.path %>
+    </p>
+  </section>
+<% end %>
+
+<% content_for :body_content_right do %>
+  <aside>
+    <h2><%= t('.other') %></h2>
+    <ul id="page_templates">
+      <% @page_templates.each do |page_template| %>
+        <li>
+          <%= link_to page_template.name, page_template_path(page_template) %>
+        </li>
+      <% end %>
+    </ul>
+  </aside>
+<% end %>
+
+<%= render :partial => "/shared/content_page" %>

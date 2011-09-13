@@ -1,0 +1,25 @@
+lolcat:
+  shared:
+    admin:
+      image_picker:
+        image: IMAGE
+  plugins:
+    page_templates:
+      title: Page Templates
+  admin:
+    page_templates:
+      actions:
+        create_new: CREATE NEW Page Template
+        reorder: REORDR Page Templates
+        reorder_done: DUN REORDERIN Page Templates
+      records:
+        title: Page Templates
+        sorry_no_results: SRY! THAR R NO RESULTS FINDZ.
+        no_items_yet: THAR R NO Page Templates YET. CLICK "CREATE NEW Page Template" 2 ADD UR FURST page template.
+      page_template:
+        view_live_html: VIEW DIS page template LIV <BR/><EM>(OPENS IN NEW WINDOW)</EM>
+        edit: EDIT DIS page template
+        delete: REMOOV DIS page template FOREVR
+  page_templates:
+    show:
+      other: OTHR Page Templates

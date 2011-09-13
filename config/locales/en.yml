@@ -1,0 +1,25 @@
+en:
+  shared:
+    admin:
+      image_picker:
+        image: image
+  plugins:
+    page_templates:
+      title: Page Templates
+  admin:
+    page_templates:
+      actions:
+        create_new: Add New Page Template
+        reorder: Reorder Page Templates
+        reorder_done: Done Reordering Page Templates
+      records:
+        title: Page Templates
+        sorry_no_results: Sorry! There are no results found.
+        no_items_yet: There are no Page Templates yet. Click "Add New Page Template" to add your first page template.
+      page_template:
+        view_live_html: View this page template live <br/><em>(opens in a new window)</em>
+        edit: Edit this page template
+        delete: Remove this page template forever
+  page_templates:
+    show:
+      other: Other Page Templates
