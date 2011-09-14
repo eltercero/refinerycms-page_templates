@@ -18,3 +18,5 @@ en:
           label: Select a Page Template
           help: 
           automatic: Automatic selection
+          manual_selection: manual
+          auto_selection: auto          

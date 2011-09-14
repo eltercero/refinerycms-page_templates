@@ -27,8 +27,13 @@
                 = v
                 %br
     %p
-      %strong Asignada a:
-      - if page_template.pages.empty?
+      %strong Asignada manualmente a:
+      - if page_template.manually_assigned_pages.empty?
         Ninguna página
-      - page_template.pages.each do |page|
+      - page_template.manually_assigned_pages.each do |page|
         = link_to page.title, edit_admin_page_path(page)
+      %strong Asignada automáticamente a:
+      - if page_template.auto_assigned_pages.empty?
+        Ninguna página
+      - page_template.auto_assigned_pages.each do |page|
+        = link_to page.title, edit_admin_page_path(page)        

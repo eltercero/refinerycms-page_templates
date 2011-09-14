@@ -21,7 +21,7 @@
       <%= f.select :parent_id, nested_set_options(Page, @page) {|i| "#{'-' * i.level} #{i.title}" },
                    :include_blank => true %>
     </div>
-    <!-- page_templates -->
+<%# page_templates %>
     <% content_for :javascripts do %>
       <%= javascript_include_tag "page_templates" %>
     <% end %>
@@ -31,8 +31,11 @@
         <%= refinery_help_tag t('.page_template.help') %>
       </span>
       <%= f.select :page_template_path, PageTemplate.options_for_select(@page, t('.page_template.automatic')) %>
+      <span id="page_template_auto_selection"<%= " style=display:none;" if @page.lock_page_template %>><%= t(".page_template.auto_selection") %></span>
+      <span id="page_template_manual_selection"<%= " style=display:none;" unless @page.lock_page_template %>><%= t(".page_template.manual_selection") %></span>
+      <%= f.hidden_field :lock_page_template %>
     </div>
-    <!-- end page_templates -->
+<%# end page_templates %>
     <div class='field'>
       <span class='label_with_help'>
         <%= label_tag :custom_title, t('.custom_title') %>

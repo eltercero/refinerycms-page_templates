@@ -9,15 +9,20 @@ namespace :refinery do
     PageTemplate instances and re-creating them using the YAML files found in 
     app/views/pages"
     task :refresh => :environment do
-      PageTemplate.all.each{ |t| t.destroy }
-      pages_views_path = "#{RAILS_ROOT}/app/views/pages/" # leave the trailing slash...
+      puts "\n1. Destroy every PageTemplate instance:"
+      PageTemplate.all.each do |t| 
+        t.destroy
+        print "."
+      end
+      print "[DONE]\n"
+      puts "\n2.Find yml/html pairs and inject them in the DB as PageTemplate instances:"
+      pages_views_path = "#{RAILS_ROOT}/app/views/pages"
       Find.find(pages_views_path) do |path|
         if File.extname(path) == ".yml"
           template = PageTemplate.new(YAML::load_file(path))
-          template.path = path.sub(pages_views_path, "") # ...or this will return /path instead of path
+          template.path = path.sub("#{pages_views_path}/", "")
           template.path.chomp!(File.extname(path))
           if template.save
-            template.pages.each{ |page| page.save } # Force Page saving to update Page Parts
             puts "[OK] #{template.path}"
           elsif template.errors
             errmsg = "[ERROR] #{template.path}: "
@@ -26,6 +31,16 @@ namespace :refinery do
           end
         end
       end
+      # Autoselect template if needed and re-apply templates
+      puts "\n3. Auto-select (if not locked) and re-apply templates on every Page instance:"
+      Page.all.each do |page| 
+        if page.save
+          print "."
+        else
+          print "x"
+        end
+      end
+      print "[DONE]\n\n"
     end
   end
 end
