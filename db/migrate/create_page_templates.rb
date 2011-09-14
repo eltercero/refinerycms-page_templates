@@ -13,9 +13,11 @@ class CreatePageTemplates < ActiveRecord::Migration
     
     add_index :page_templates, :path
 
-    add_column :pages, :page_template_path, :string
+    add_column ::Page.table_name, :page_template_path, :string
+    add_column ::Page.table_name, :lock_page_template, :boolean
 
-    load(Rails.root.join('db', 'seeds', 'page_templates.rb'))
+    add_column ::PagePart.table_name, :legacy, :boolean
+
   end
 
   def self.down
@@ -23,8 +25,9 @@ class CreatePageTemplates < ActiveRecord::Migration
       UserPlugin.destroy_all({:name => "page_templates"})
     end
     
-    remove_column :pages, :page_template_path
-
+    remove_column ::Page.table_name, :page_template_path
+    remove_column ::Page.table_name, :lock_page_template
+    remove_column ::PagePart.table_name, :legacy, :boolean
     drop_table :page_templates
   end
 

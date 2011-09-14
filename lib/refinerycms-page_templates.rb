@@ -42,7 +42,8 @@ module Refinery
       module ClassMethods
         def has_page_template
           belongs_to :page_template, :foreign_key => :page_template_path
-          after_save :update_page_parts
+          before_save :find_template
+          after_save :apply_template
           include Refinery::PageTemplates::Extension::InstanceMethods
           if ActiveModel::MassAssignmentSecurity::WhiteList === active_authorizer
             attr_accessible :page_template_path
@@ -53,14 +54,33 @@ module Refinery
         end
       end
       module InstanceMethods
-        def update_page_parts
-          # Proceed only if there's a template defined
+        
+        def find_template
+          if page_template_changed?
+            self.lock_page_template = true
+          end
+          unless self.lock_page_template
+            # Find template
+          end
+        end
+        def page_template_changed?
+          (@old_page_template_path && @old_page_template_path!=self.page_template_path)
+        end
+        def page_template_path=(val)
+          @old_page_template_path = self.page_template_path unless @old_page_template_path
+          self.page_template_path = val
+        end
+        def apply_template
+          # Proceed only if there's a template assigned to this Page instance
           return if page_template.nil?
           # Remove all parts which are empty and are not defined in the current template
           parts.each do |part|
             unless page_template.page_parts.map{ |p| p['title'] }.include?(part.title)
               if part.body.empty?
                 part.destroy
+              else
+                part.update_attribute(:legacy, true)
+                part.save
               end
             end
           end
