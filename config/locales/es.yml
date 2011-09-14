@@ -1,0 +1,20 @@
+es:
+  shared:
+    admin:
+      image_picker:
+        image: imagen
+  plugins:
+    page_templates:
+      title: Plantillas de página
+  admin:
+    page_templates:
+      records:
+        title: Plantillas de página
+        sorry_no_results: "Lo sentimos, pero no se han encontrado resultados"
+        no_items_yet: Todavía no hay plantillas registradas en el sistema. Prueba a ejecutar rake refinery:page_templates:refresh.
+    pages:
+      form_advanced_options:
+        page_template:
+          label: Select a Page Template
+          help: 
+          automatic: Automatic selection

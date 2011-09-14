@@ -17,6 +17,7 @@ namespace :refinery do
           template.path = path.sub(pages_views_path, "") # ...or this will return /path instead of path
           template.path.chomp!(File.extname(path))
           if template.save
+            template.pages.each{ |page| page.save } # Force Page saving to update Page Parts
             puts "[OK] #{template.path}"
           elsif template.errors
             errmsg = "[ERROR] #{template.path}: "

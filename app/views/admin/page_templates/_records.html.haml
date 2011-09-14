@@ -1,0 +1,8 @@
+- if @page_templates.any?
+  .pagination_container
+    = render :partial => 'page_templates'
+
+- else
+  %p
+    %strong
+      = t('.no_items_yet')
