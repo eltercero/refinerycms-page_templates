@@ -9,12 +9,14 @@ namespace :refinery do
     PageTemplate instances and re-creating them using the YAML files found in 
     app/views/pages"
     task :refresh => :environment do
+
       puts "\n1. Destroy every PageTemplate instance:"
       PageTemplate.all.each do |t| 
         t.destroy
         print "."
       end
       print "[DONE]\n"
+
       puts "\n2.Find yml/html pairs and inject them in the DB as PageTemplate instances:"
       pages_views_path = "#{RAILS_ROOT}/app/views/pages"
       Find.find(pages_views_path) do |path|
@@ -31,9 +33,15 @@ namespace :refinery do
           end
         end
       end
-      # Autoselect template if needed and re-apply templates
+
       puts "\n3. Auto-select (if not locked) and re-apply templates on every Page instance:"
-      Page.all.each do |page| 
+      Page.all.each do |page|
+        # Maybe this page's template has been destroyed and no new template
+        # has been created with the same path. In that case, back to automatic
+        # template selection
+        if page.page_template.nil?
+          page.lock_page_template = false
+        end
         if page.save
           print "."
         else

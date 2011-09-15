@@ -68,10 +68,12 @@ module Refinery
         # Find the most suitable template based on this page 
         # and its ancestor's slugs and assign it automatically
         def auto_select_template
-          # Don't do anything if Page already has a PageTemplate
+          # Don't do anything if Page has a valid PageTemplate
           # and it's locked (because it was selected manually)
-          unless self.page_template_path && self.lock_page_template
-            self.page_template_path = self.guess_template_path
+          if self.page_template_path.present? &&
+              PageTemplate.find(self.page_template_path).present? &&
+                self.lock_page_template
+                  self.page_template_path = self.guess_template_path
           end
         end
         def guess_template_path
@@ -85,24 +87,22 @@ module Refinery
           end
         end
 
-        # Re-apply template if a new template has been selected or the template
-        # has been updated since the last saving of this Page
+        # Re-apply template if a new template has been selected
         def should_apply_template?
+          return true if self.id.nil?
           past_self = Page.find(self.id)
           new_template_selected = (past_self.page_template_path != self.page_template_path)
-          template_has_been_updated = page_template.present? && (page_template.updated_at > past_self.updated_at)
-          @should_apply_template = new_template_selected || template_has_been_updated
+          return new_template_selected
         end
 
         def apply_template
           return unless @should_apply_template
-          # If this Page instance has a PageTemplate, use the PagePart
-          # sceheme defined there. Otherwise, use default parts from Settings.
-          if page_template.present?
-            logger.debug "\n\napplying template\n\n"
+          # If this Page instance has a PageTemplate and the template has a 
+          # page_parts sceheme, use those parts here. Otherwise, use default
+          # parts from Settings.
+          if page_template.present? and page_template.page_parts.present?
             template_parts = page_template.page_parts
           else
-            logger.debug "\n\nusing default parts\n\n"
             template_parts = Page.default_parts
           end
           # Remove all parts which are empty and not defined in the current template
