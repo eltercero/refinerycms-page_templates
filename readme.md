@@ -49,12 +49,11 @@ The engine is ready, but now you have to create some templates. Go ahead:
 
 You need two files for each template:
 
-  * A YAML definition file
-  * The template itself (a ```.html``` or ```.haml``` file)
+  * A configuration file (```.yml```)
+  * The template itself (a ```.html.erb``` or ```.html.haml``` file)
 
-They must be placed in ```#{RAILS_ROOT}/app/views/pages```, and you can group 
-them in folders for better organization. You should end up with something 
-that looks like this:
+Both files must be placed in ```#{RAILS_ROOT}/app/views/pages```, and you can group 
+them in folders for better organization. You should end up with something like this:
 
     app/views/pages/
     ├── corporate
@@ -70,33 +69,33 @@ that looks like this:
 
 ### YAML file
 
-Fill it like this:
+Write your YAMLs like this:
 
 **app/views/pages/corporate.yaml**:
-    ```yaml
-    description: Generic template for Corporate section
-    layout: pages
-    page_parts:
-      - {:title => Head }
-      - {:title => Main contents }
-      - {:title => Sidebar }
-    ```
+
+```yaml
+description: Generic template for Corporate section
+layout: pages
+page_parts:
+- {:title => Head }
+- {:title => Main contents }
+- {:title => Sidebar }
+```
 
 ### Haml or Erb file
 
-Write the as you would write any other Refinery template. Like always, you'll
-be able to access your page parts like this:
+A regular Refinery template. You can render the contents of your page parts like this:
 
-    ```ruby
-    @page.content_for(:main_contents).html_safe
-    ```
+```ruby
+@page.content_for(:main_contents).html_safe
+```
 
 
 ## Template injection
 
 Now you have to make Refinery aware of your new templates. Execute:
 
-  rake refinery:page_templates:refresh
+    rake refinery:page_templates:refresh
 
 **IMPORTANT: You must execute this task every single time you make changes to your 
 templates.**
@@ -108,7 +107,7 @@ The rake task performs the following operations:
   1. Destroy every ```PageTemplate``` instance that exists in the database.
   2. Find ```.yml``` files in ```#{RAILS_ROOT}/app/views/pages``` and create
      a ```PageTemplate``` instance for each of them, but only if a ```.erb``` 
-     or ````.haml``` file with the same name is found within the same 
+     or ```.haml``` file with the same name is found within the same 
      directory. Otherwise an error will be shown.
   3. Go through each ```Page``` instance and:
     * If needed, auto-select a template based on the ```slug.name``` of the 
@@ -145,7 +144,7 @@ have happened via **automatic template assignment**:
 
 ### Automatic template assignment
 
-Everytime a Page is saved (or for every single page when the ```refresh``` rake
+Everytime a Page is saved (or for every single page when the ```refinery:page_templates:refresh```
 task is ran), the following conditions wil be checked:
 
   * Does it have a template associated?
@@ -183,27 +182,27 @@ After injecting the templates in the database with
 ```rake refinery:page_templates:refresh```, we 
 can try this in the console:
 
-    ```ruby
-    page1 = Page.create :title => "Wadus"
-    page1.guess_template_path
-    => nil
-    
-    page2 = Page.create :title => "Corporate"
-    page2.guess_template_path
-    => "corporate"
-    
-    page1.parent = page2
-    page1.guess_template_path
-    => "corporate"
-    
-    page3 = Page.create :title => "Job Inquiries"
-    page3.guess_template_path
-    => nil
-    
-    page3.parent = page2
-    page3.guess_template_path
-    => "corporate/job_inquiries"
-    ```
+```ruby
+page1 = Page.create :title => "Wadus"
+page1.guess_template_path
+=> nil
+
+page2 = Page.create :title => "Corporate"
+page2.guess_template_path
+=> "corporate"
+
+page1.parent = page2
+page1.guess_template_path
+=> "corporate"
+
+page3 = Page.create :title => "Job Inquiries"
+page3.guess_template_path
+=> nil
+
+page3.parent = page2
+page3.guess_template_path
+=> "corporate/job_inquiries"
+```
 
 ### Manual template assignment
 
