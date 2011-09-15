@@ -70,7 +70,7 @@ module Refinery
         def auto_select_template
           # Don't do anything if Page has a valid PageTemplate
           # and it's locked (because it was selected manually)
-          if self.page_template_path.present? &&
+          unless self.page_template_path.present? &&
               PageTemplate.find(self.page_template_path).present? &&
                 self.lock_page_template
                   self.page_template_path = self.guess_template_path
