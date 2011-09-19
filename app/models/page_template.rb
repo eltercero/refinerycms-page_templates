@@ -1,11 +1,11 @@
-require 'validators/template_existence_validator'
+require 'validators/page_template_existence_validator'
 class PageTemplate < ActiveRecord::Base
 
   set_primary_key 'path'
   
   acts_as_indexed :fields => [:path]
 
-  validates :path, :presence => true, :uniqueness => true, :template_existence => true
+  validates :path, :presence => true, :uniqueness => true, :page_template_existence => true
   serialize :page_parts
   has_many :pages, :foreign_key => :page_template_path
 

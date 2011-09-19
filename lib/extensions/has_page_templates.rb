@@ -6,10 +6,11 @@ module Extensions
     def auto_select_template
       # Don't do anything if Page has a valid PageTemplate
       # and it's locked (because it was selected manually)
-      unless self.page_template_path.present? &&
+      unless defined?self.page_template_path &&
+          self.page_template_path.present? &&
           PageTemplate.find(self.page_template_path).present? &&
-            self.lock_page_template
-              self.page_template_path = self.guess_template_path
+          self.lock_page_template
+            self.page_template_path = self.guess_template_path
       end
     end
     def guess_template_path
@@ -27,6 +28,7 @@ module Extensions
     # if a new template has been selected
     def should_apply_template?
       return true if self.id.nil?
+      return false unless defined?(self.page_template_path)
       past_self = Page.find(self.id)
       new_template_selected = (past_self.page_template_path != self.page_template_path)
       return new_template_selected
