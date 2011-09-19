@@ -2,22 +2,29 @@ require 'refinerycms-base'
 
 module Refinery
   module PageTemplates
-
-    class << self
-      attr_accessor :root
-      def root
-        @root ||= Pathname.new(File.expand_path('../../', __FILE__))
-      end
-    end
-
     class Engine < Rails::Engine
-
+      
+      config.before_initialize do
+        require 'extensions/has_page_templates'
+        require 'extensions/pages_controller_extensions'
+      end
+      
       initializer "static assets" do |app|
         app.middleware.insert_after ::ActionDispatch::Static, ::ActionDispatch::Static, "#{root}/public"
       end
       
+      config.to_prepare do
+        Page.module_eval do
+          belongs_to  :page_template, :foreign_key => :page_template_path
+          before_save :auto_select_template, :should_apply_template?
+          after_save  :apply_template
+          attr_accessible :page_template_path, :lock_page_template
+        end
+        Page.send :include, Extensions::HasPageTemplates
+      end
+      
       refinery.after_inclusion do 
-        Page.send :has_page_template
+        ::PagesController.send :include, Extensions::PagesController
       end
       
       config.after_initialize do
@@ -35,97 +42,3 @@ module Refinery
     end # Engine
   end # PageTemplates
 end # Refinery
-
-module Refinery
-  module PageTemplates
-    module Extension
-
-      def self.included(base)
-        base.extend(ClassMethods)
-      end
-
-      module ClassMethods
-
-        def has_page_template
-          belongs_to  :page_template, :foreign_key => :page_template_path
-          before_save :auto_select_template, :should_apply_template?
-          after_save  :apply_template
-
-          include Refinery::PageTemplates::Extension::InstanceMethods
-
-          if ActiveModel::MassAssignmentSecurity::WhiteList === active_authorizer
-            attr_accessible :page_template_path, :lock_page_template
-          else
-            #to prevent a future call to attr_accessible
-            self._accessible_attributes = accessible_attributes + [:page_template_path]
-          end
-        end
-
-      end # ClassMethods
-
-      module InstanceMethods
-        
-        # Find the most suitable template based on this page 
-        # and its ancestor's slugs and assign it automatically
-        def auto_select_template
-          # Don't do anything if Page has a valid PageTemplate
-          # and it's locked (because it was selected manually)
-          unless self.page_template_path.present? &&
-              PageTemplate.find(self.page_template_path).present? &&
-                self.lock_page_template
-                  self.page_template_path = self.guess_template_path
-          end
-        end
-        def guess_template_path
-          expected_path = [slug.name.gsub("-","_")]
-          expected_path << parent.slug.name.gsub("-","_") if parent
-          expected_path = expected_path.reverse.join("/")
-          if PageTemplate.find_by_path(expected_path)
-            return expected_path
-          elsif parent
-            return parent.guess_template_path
-          end
-        end
-
-        # Re-apply template if a new template has been selected
-        def should_apply_template?
-          return true if self.id.nil?
-          past_self = Page.find(self.id)
-          new_template_selected = (past_self.page_template_path != self.page_template_path)
-          return new_template_selected
-        end
-
-        def apply_template
-          return unless @should_apply_template
-          # If this Page instance has a PageTemplate and the template has a 
-          # page_parts sceheme, use those parts here. Otherwise, use default
-          # parts from Settings.
-          if page_template.present? and page_template.page_parts.present?
-            template_parts = page_template.page_parts
-          else
-            template_parts = Page.default_parts
-          end
-          # Remove all parts which are empty and not defined in the current template
-          parts.each do |part|
-            unless template_parts.present? && template_parts.map{ |p| p['title'] }.include?(part.title)
-              unless part.body.present?
-                part.destroy
-              else
-                part.save
-              end
-            end
-          end unless parts.nil?
-          # Make sure the page has all parts defined in the template
-          template_parts.each_with_index do |part, index|
-            unless parts.present? && parts.map{ |p| p.title }.include?(part['title'])
-              parts.create(:title => part['title'], :position => index)
-            end
-          end unless template_parts.nil?
-        end
-      
-      end # InstanceMethods
-    end # Extension
-  end # PageTemplates
-end # Refinery
-
-ActiveRecord::Base.send(:include, Refinery::PageTemplates::Extension)

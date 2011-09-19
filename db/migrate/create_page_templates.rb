@@ -2,11 +2,11 @@ class CreatePageTemplates < ActiveRecord::Migration
 
   def self.up
     create_table :page_templates, :id => false, :primary_key => 'path' do |t|
-      t.string :path, :null => false
-      t.string :description
+      t.string  :path, :null => false
+      t.string  :description
       t.integer :position
-      t.string :layout
-      t.text :page_parts
+      t.string  :layout
+      t.text    :page_parts
       t.timestamps
     end
     
