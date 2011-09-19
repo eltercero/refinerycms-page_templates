@@ -1,42 +1,61 @@
 module Extensions
   module HasPageTemplates
-
+    
     # Find the most suitable template based on this page 
     # and its ancestor's slugs and assign it automatically
     def auto_select_template
       # Don't do anything if Page has a valid PageTemplate
       # and it's locked (because it was selected manually)
-      unless defined?self.page_template_path &&
+      unless defined?(self.page_template_path) && # Check PageTemplates migration already ran
           self.page_template_path.present? &&
           PageTemplate.find(self.page_template_path).present? &&
           self.lock_page_template
             self.page_template_path = self.guess_template_path
       end
+      return true
     end
-    def guess_template_path
-      expected_path = [slug.name.gsub("-","_")]
-      expected_path << parent.slug.name.gsub("-","_") if parent
-      expected_path = expected_path.reverse.join("/")
-      if PageTemplate.find_by_path(expected_path)
-        return expected_path
-      elsif parent
-        return parent.guess_template_path
+    
+    def expected_template_paths
+      out = []
+      slugs.each do |s|
+        if parent && !parent.home?
+          parent.expected_template_paths.each do |parent_path|
+            out << [parent_path, s.name.gsub("-","_")].compact.flatten.join("/")
+          end
+        else
+          out << s.name.gsub("-","_")
+        end
       end
+      out += parent.expected_template_paths if parent
+      return out
+    end
+
+    def guess_template_path
+      expected_template_paths.each do |expected_path|
+        if PageTemplate.find_by_path(expected_path)
+          return expected_path
+        end
+      end
+      return nil
     end
 
     # We should re-apply the template to the page
-    # if a new template has been selected
+    # if the page is new or the template has been changed
     def should_apply_template?
-      return true if self.id.nil?
-      return false unless defined?(self.page_template_path)
-      past_self = Page.find(self.id)
-      new_template_selected = (past_self.page_template_path != self.page_template_path)
-      return new_template_selected
+      if self.id.nil? # New page
+        @should_apply_template = true
+      elsif not defined?(self.page_template_path) # PageTemplate migration not ran yet
+        @should_apply_template = false
+      else # Check if template is different from previous
+        past_self = Page.find(self.id)
+        @should_apply_template = (past_self.page_template_path != self.page_template_path)
+      end
+      return true # Note to self: no callbacks should return false, otherwise the record won't be saved
     end
 
     # Re-apply template
-    def apply_template
-      return unless @should_apply_template
+    def apply_template(force=false)
+      return unless @should_apply_template || force
       # If this Page instance has a PageTemplate and the template has a 
       # page_parts sceheme, use those parts here. Otherwise, use default
       # parts from Settings.
