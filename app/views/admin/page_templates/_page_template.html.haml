@@ -1,11 +1,8 @@
 %div
   .header
-    %h2.title
+    %h1.title
       = page_template.path
   .detail
-    %p
-      %strong Nombre:
-      = page_template.name
     %p
       %strong Descripción:
       = page_template.description
@@ -32,8 +29,10 @@
         Ninguna página
       - page_template.manually_assigned_pages.each do |page|
         = link_to page.title, edit_admin_page_path(page)
+    %p
       %strong Asignada automáticamente a:
       - if page_template.auto_assigned_pages.empty?
         Ninguna página
       - page_template.auto_assigned_pages.each do |page|
         = link_to page.title, edit_admin_page_path(page)        
+%hr

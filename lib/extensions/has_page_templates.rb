@@ -1,20 +1,22 @@
 module Extensions
   module HasPageTemplates
-    
+
     # Find the most suitable template based on this page 
     # and its ancestor's slugs and assign it automatically
     def auto_select_template
       # Don't do anything if Page has a valid PageTemplate
       # and it's locked (because it was selected manually)
-      unless defined?(self.page_template_path) && # Check PageTemplates migration already ran
-          self.page_template_path.present? &&
-          PageTemplate.find(self.page_template_path).present? &&
-          self.lock_page_template
-            self.page_template_path = self.guess_template_path
+      if PageTemplate.table_exists?
+        unless defined?(self.page_template_path) && # Check PageTemplates migration already ran
+            self.page_template_path.present? &&
+            PageTemplate.find(self.page_template_path).present? &&
+            self.lock_page_template
+              self.page_template_path = self.guess_template_path
+        end
       end
       return true
     end
-    
+
     def expected_template_paths
       out = []
       slugs.each do |s|
@@ -32,7 +34,7 @@ module Extensions
 
     def guess_template_path
       expected_template_paths.each do |expected_path|
-        if PageTemplate.find_by_path(expected_path)
+        if PageTemplate.table_exists? && PageTemplate.find_by_path(expected_path)
           return expected_path
         end
       end
@@ -62,7 +64,7 @@ module Extensions
       if page_template.present? and page_template.page_parts.present?
         template_parts = page_template.page_parts
       else
-        template_parts = Page.default_parts
+        template_parts = Page.default_parts.map{ |p| { 'title' => p } }
       end
       # Remove all parts which are empty and not defined in the current template
       parts.each do |part|
@@ -87,15 +89,17 @@ module Extensions
 
     def update_snippets
       # Create default snippets on every PagePart
-      parts.each do |part|
-        if defined?(part.snippets) && (part.snippets.size < part.min_snippet_count)
-          unless part.default_snippet_template.nil?
-            (part.min_snippet_count - part.snippets.size).times do
-              part.snippets << Snippet.create(:snippet_template_path => part.default_snippet_template.path)
+      if Snippet.table_exists?
+        parts.each do |part|
+          if (defined?(part.snippets) && (part.snippets.present? && (part.snippets.size < part.min_snippet_count)) ) or part.snippets.nil? or part.snippets.empty?
+            unless part.default_snippet_template.nil?
+              (part.min_snippet_count - part.snippets.size).times do
+                part.snippets << Snippet.create(:snippet_template_path => part.default_snippet_template.path)
+              end
             end
           end
-        end
-      end unless parts.nil?
+        end unless parts.nil?
+      end
     end
     
   end
