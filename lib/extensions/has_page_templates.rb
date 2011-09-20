@@ -57,7 +57,7 @@ module Extensions
     def apply_template(force=false)
       return unless @should_apply_template || force
       # If this Page instance has a PageTemplate and the template has a 
-      # page_parts sceheme, use those parts here. Otherwise, use default
+      # page_parts scheme, use those parts here. Otherwise, use default
       # parts from Settings.
       if page_template.present? and page_template.page_parts.present?
         template_parts = page_template.page_parts
@@ -80,7 +80,23 @@ module Extensions
           parts.create(:title => part['title'], :position => index)
         end
       end unless template_parts.nil?
+
+      update_snippets
+
     end
 
+    def update_snippets
+      # Create default snippets on every PagePart
+      parts.each do |part|
+        if defined?(part.snippets) && (part.snippets.size < part.min_snippet_count)
+          unless part.default_snippet_template.nil?
+            (part.min_snippet_count - part.snippets.size).times do
+              part.snippets << Snippet.create(:snippet_template_path => part.default_snippet_template.path)
+            end
+          end
+        end
+      end unless parts.nil?
+    end
+    
   end
 end

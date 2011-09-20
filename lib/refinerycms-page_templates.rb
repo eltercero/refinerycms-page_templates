@@ -17,7 +17,7 @@ module Refinery
         Page.module_eval do
           belongs_to  :page_template, :foreign_key => :page_template_path
           before_save :auto_select_template, :should_apply_template?
-          after_save  :apply_template
+          after_save  :apply_template, :update_snippets
           attr_accessible :page_template_path, :lock_page_template
         end
         Page.send :include, Extensions::HasPageTemplates
