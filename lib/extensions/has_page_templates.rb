@@ -51,6 +51,7 @@ module Extensions
       else # Check if template is different from previous
         past_self = Page.find(self.id)
         @should_apply_template = (past_self.page_template_path != self.page_template_path)
+        # TODO: What if template path is the same but template has been updated?!
       end
       return true # Note to self: no callbacks should return false, otherwise the record won't be saved
     end
@@ -64,7 +65,7 @@ module Extensions
       if page_template.present? and page_template.page_parts.present?
         template_parts = page_template.page_parts
       else
-        template_parts = Page.default_parts.map{ |p| { 'title' => p } }
+        template_parts = ::Page.default_parts.map{ |p| { 'title' => p } }
       end
       # Remove all parts which are empty and not defined in the current template
       parts.each do |part|
