@@ -17,19 +17,25 @@ namespace :refinery do
       end
       print "[DONE]\n"
 
-      puts "\n2.Find yml/html pairs and inject them in the DB as PageTemplate instances:"
+      puts "\n2.Find yml/html pairs and inject them in the DB as PageTemplate instances:\n\n"
       pages_views_path = "#{RAILS_ROOT}/app/views/pages"
-      Find.find(pages_views_path) do |path|
-        if File.extname(path) == ".yml"
-          template = PageTemplate.new(YAML::load_file(path))
-          template.path = path.sub("#{pages_views_path}/", "")
-          template.path.chomp!(File.extname(path))
+      unless File.directory? pages_views_path
+        puts "[ERROR] #{pages_views_path} doesn't exist."
+        next
+      end
+      Find.find(pages_views_path) do |full_path|
+        if File.extname(full_path) == ".yml"
+          template_path = full_path.sub("#{pages_views_path}/", "")
+          template_path.chomp!(File.extname(full_path))
+          print "\s\s#{template_path}".ljust(60,".")
+          template = PageTemplate.new(YAML::load_file(full_path))
+          template.path = template_path
           if template.save
-            puts "[OK] #{template.path}"
+            print "[OK]\n"
           elsif template.errors
-            errmsg = "[ERROR] #{template.path}: "
-            errmsg << template.errors.map{|k,v| "#{k} #{v}" }.join(', ')
-            puts errmsg
+            print "[ERROR]\n"
+            puts template.errors.map{|k,v| "\s\s#{k} #{v}" }.join(', ')
+            print "\n"
           end
         end
       end
