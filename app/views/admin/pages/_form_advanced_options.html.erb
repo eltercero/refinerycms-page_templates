@@ -30,10 +30,10 @@
         <%= f.label :page_template_path, t('.page_template.label') %>
         <%= refinery_help_tag t('.page_template.help') %>
       </span>
-      <%= f.select :page_template_path, PageTemplate.options_for_select(@page, t('.page_template.automatic')) %>
+      <%= f.select :page_template_path, PageTemplate.options_for_select(@page, t('.page_template.automatic')), {}, :id => "page_page_template_path" %>
       <span id="page_template_auto_selection"<%= " style=display:none;" if @page.lock_page_template %>><%= t(".page_template.auto_selection") %></span>
       <span id="page_template_manual_selection"<%= " style=display:none;" unless @page.lock_page_template %>><%= t(".page_template.manual_selection") %></span>
-      <%= f.hidden_field :lock_page_template %>
+      <%= f.hidden_field :lock_page_template, :id => "page_lock_page_template" %>
     </div>
 <%# end page_templates %>
     <div class='field'>

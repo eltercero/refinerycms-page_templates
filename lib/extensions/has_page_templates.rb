@@ -9,7 +9,7 @@ module Extensions
       if PageTemplate.table_exists?
         unless defined?(self.page_template_path) && # Check PageTemplates migration already ran
             self.page_template_path.present? &&
-            PageTemplate.find(self.page_template_path).present? &&
+            PageTemplate.exists?(self.page_template_path) &&
             self.lock_page_template
               self.page_template_path = self.guess_template_path
         end
