@@ -29,6 +29,7 @@ module Refinery
       
       config.after_initialize do
         Refinery::Plugin.register do |plugin|
+          plugin.hide_from_menu = true
           plugin.name = "page_templates"
           plugin.pathname = root
           plugin.activity = {
