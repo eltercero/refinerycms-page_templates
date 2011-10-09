@@ -10,14 +10,19 @@ module Extensions
         def render_filter
           instance_eval do
             def default_render
-              unless @page.page_template.nil?
+
+              template = @page.page_template.present? ? @page.page_template : PageTemplate.find(@page.guess_template_path)
+              
+              if template.present?
                 render_options = {}
-                  render_options[:template] = "pages/#{@page.page_template.path}"
-                  unless @page.page_template.layout.nil?
-                    render_options[:layout] = @page.page_template.layout 
-                  end
+                render_options[:template] = "pages/#{template.path}"
+                if template.layout.present?
+                  render_options[:layout] = template.layout
+                end
+                logger.debug "[page_templates] Render page using options #{render_options.inspect}"
                 render render_options
               end
+              
             end # def default_render
           end # instance_eval
         end # def render_filter

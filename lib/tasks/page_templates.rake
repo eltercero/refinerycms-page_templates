@@ -48,7 +48,7 @@ namespace :refinery do
         if page.page_template.nil?
           page.lock_page_template = false
         end
-        if page.save
+        if page.save && page.apply_template(true)
           print "."
         else
           print "x"

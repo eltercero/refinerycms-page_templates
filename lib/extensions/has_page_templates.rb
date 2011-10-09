@@ -20,7 +20,7 @@ module Extensions
     def expected_template_paths
       out = []
       slugs.each do |s|
-        if parent && !parent.home?
+        if parent.present? && !parent.home?
           parent.expected_template_paths.each do |parent_path|
             out << [parent_path, s.name.gsub("-","_")].compact.flatten.join("/")
           end
@@ -28,13 +28,14 @@ module Extensions
           out << s.name.gsub("-","_")
         end
       end
-      out += parent.expected_template_paths if parent
+      out += parent.expected_template_paths if parent.present?
+      out << parent.page_template_path if parent.present? and parent.page_template_path.present?
       return out
     end
 
     def guess_template_path
       expected_template_paths.each do |expected_path|
-        if PageTemplate.table_exists? && PageTemplate.find_by_path(expected_path)
+        if PageTemplate.table_exists? && PageTemplate.exists?(expected_path)
           return expected_path
         end
       end
