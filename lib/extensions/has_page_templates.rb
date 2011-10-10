@@ -71,7 +71,7 @@ module Extensions
       # Remove all parts which are empty and not defined in the current template
       parts.each do |part|
         unless template_parts.present? && template_parts.map{ |p| p['title'] }.include?(part.title)
-          unless part.body.present?
+          if part.empty?
             part.destroy
           else
             part.save
