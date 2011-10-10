@@ -80,7 +80,16 @@ module Extensions
       end unless parts.nil?
       # Make sure the page has all parts defined in the template
       template_parts.each_with_index do |part, index|
-        unless parts.present? && parts.map{ |p| p.title }.include?(part['title'])
+                # Skip inheritable parts if this page is using its parent's template
+        unless  (parent.present? and page_template == parent.page_template and part['inheritable']) or
+                # Skip parts marked as "parents_only" unless this page didn't inherit its template
+                (parent.present? and page_template == parent.page_template and part['parents_only']) or
+                # Skip if part is only available to some other pages 
+                (parent.present? and page_template == parent.page_template and part['except'].present? and p.to_param =~ Regexp.new(part['except']) ) or
+                # Skip if this is not one of the pages for which this part is available exclusively
+                (parent.present? and page_template == parent.page_template and (part['only'].present? and not p.to_param =~ Regexp.new(part['only']))) or
+                # Skip if this part exists already in this page
+                (parts.present? and parts.map{ |p| p.title }.include?(part['title']))
           parts.create(:title => part['title'], :position => index)
         end
       end unless template_parts.nil?
@@ -102,6 +111,10 @@ module Extensions
           end
         end unless parts.nil?
       end
+    end
+    
+    def inheritable_parts
+      page_template.page_parts.select{ |part| part['inheritable'] }.map{ |tp| parts.select{ |p| p.title == tp['title'] } }.flatten
     end
     
   end
