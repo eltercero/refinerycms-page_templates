@@ -114,7 +114,7 @@ module Extensions
     end
     
     def inheritable_parts
-      page_template.page_parts.select{ |part| part['inheritable'] }.map{ |tp| parts.select{ |p| p.title == tp['title'] } }.flatten
+      page_template.page_parts.select{ |part| part['inheritable'].present? }.map{ |tp| parts.select{ |p| p.title == tp['title'] } }.flatten
     end
     
   end
