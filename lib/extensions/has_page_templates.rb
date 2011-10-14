@@ -85,9 +85,9 @@ module Extensions
                 # Skip parts marked as "parents_only" unless this page didn't inherit its template
                 (parent.present? and page_template == parent.page_template and part['parents_only']) or
                 # Skip if part is only available to some other pages 
-                (parent.present? and page_template == parent.page_template and part['except'].present? and p.to_param =~ Regexp.new(part['except']) ) or
+                (part['except'].present? and p.to_param =~ Regexp.new(part['except']) ) or
                 # Skip if this is not one of the pages for which this part is available exclusively
-                (parent.present? and page_template == parent.page_template and (part['only'].present? and not p.to_param =~ Regexp.new(part['only']))) or
+                (part['only'].present? and not p.to_param =~ Regexp.new(part['only'])) or
                 # Skip if this part exists already in this page
                 (parts.present? and parts.map{ |p| p.title }.include?(part['title']))
           parts.create(:title => part['title'], :position => index)
