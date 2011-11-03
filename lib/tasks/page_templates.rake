@@ -41,20 +41,27 @@ namespace :refinery do
       end
 
       puts "\n3. Auto-select (if not locked) and re-apply templates on every Page instance:"
+      updated_pages = []
       Page.all.each do |page|
         # Maybe this page's template has been destroyed and no new template
         # has been created with the same path. In that case, back to automatic
         # template selection
         if page.page_template.nil?
           page.lock_page_template = false
-        end
-        if page.save && page.apply_template(true)
-          print "."
+          if page.save && page.apply_template(true)
+            print "."
+            updated_pages << "* #{page.title}"
+          else
+            print "x"
+          end
         else
-          print "x"
+          print '-'
         end
       end
       print "[DONE]\n\n"
+      print "I've updated the following pages:\n"
+      print updated_pages.join('\n')
+      print "\n"
     end
   end
 end
