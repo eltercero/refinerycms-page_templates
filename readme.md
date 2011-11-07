@@ -29,7 +29,7 @@ and customization, but it should be perfectly usable by itself.
 Add this to your Gemfile:
 
     gem 'haml'
-    gem 'refinerycms-page_templates', :path => 'vendor/plugins'
+    gem 'refinerycms-page_templates', :path => 'vendor/engines'
 
 Then:
 
