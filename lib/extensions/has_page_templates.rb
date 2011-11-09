@@ -114,6 +114,7 @@ module Extensions
     end
     
     def inheritable_parts
+      logger.debug "inheritable parts for #{self.title}"
       if page_template.page_parts.present?
         page_template.page_parts.select{ |part| part['inheritable'].present? }.map{ |tp| parts.select{ |p| p.title == tp['title'] } }.flatten
       end
