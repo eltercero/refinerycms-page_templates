@@ -50,7 +50,7 @@ module Extensions
       elsif not defined?(self.page_template_path) # PageTemplate migration not ran yet
         @should_apply_template = false
       else # Check if template is different from previous
-        past_self = Page.find(self.id)
+        past_self = ::Page.find(self.id)
         @should_apply_template = (past_self.page_template_path != self.page_template_path)
         # TODO: What if template path is the same but template has been updated?!
       end
@@ -63,21 +63,22 @@ module Extensions
       # If this Page instance has a PageTemplate and the template has a 
       # page_parts scheme, use those parts here. Otherwise, use default
       # parts from Settings.
-      if page_template.present? and page_template.page_parts.present?
-        template_parts = page_template.page_parts
+      template_parts = if page_template.present? and page_template.page_parts.present?
+        page_template.page_parts
       else
-        template_parts = ::Page.default_parts.map{ |p| { 'title' => p } }
+        ::Page.default_parts.map{ |p| { 'title' => p } }
       end
-      # Remove all parts which are empty and not defined in the current template
+      # Remove all parts which are empty and not defined in the current template      
       parts.each do |part|
         unless template_parts.present? && template_parts.map{ |p| p['title'] }.include?(part.title)
-          if part.empty?
+          if part.body.blank?
             part.destroy
           else
             part.save
           end
         end
       end unless parts.nil?
+      
       # Make sure the page has all parts defined in the template
       template_parts.each_with_index do |part, index|
                 # Skip inheritable parts if this page is using its parent's template
@@ -102,11 +103,9 @@ module Extensions
       # Create default snippets on every PagePart
       if Snippet.table_exists?
         parts.each do |part|
-          if (defined?(part.snippets) && (part.snippets.present? && (part.snippets.size < part.min_snippet_count)) ) or part.snippets.nil? or part.snippets.empty?
-            unless part.default_snippet_template.nil?
-              (part.min_snippet_count - part.snippets.size).times do
-                part.snippets << Snippet.create(:snippet_template_path => part.default_snippet_template.path)
-              end
+          if (defined?(part.snippets) && part.snippets.present?) or part.snippets.nil? or part.snippets.empty?
+            part.snippets.size.times do
+              part.snippets << Snippet.create(:snippet_template_path => part.default_snippet_template.path)
             end
           end
         end unless parts.nil?
