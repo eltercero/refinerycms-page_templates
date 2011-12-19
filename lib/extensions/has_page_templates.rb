@@ -101,7 +101,7 @@ module Extensions
 
     def update_snippets
       # Create default snippets on every PagePart
-      if Snippet.table_exists?
+      if defined?(Snippet) and Snippet.table_exists?
         parts.each do |part|
           if (defined?(part.snippets) && part.snippets.present?) or part.snippets.nil? or part.snippets.empty?
             part.snippets.size.times do
